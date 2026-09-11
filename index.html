@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clasificador de Flores Iris</title>
+  <link rel="stylesheet" href="estaticos/css/estilos.css" />
+</head>
+<body>
+  <div class="fondo" aria-hidden="true"></div>
+
+  <main class="contenedor">
+    <header class="encabezado">
+      <h1>🌸 Clasificador de flores Iris</h1>
+      <p class="subtitulo">
+        Escribe las 4 medidas de la flor y una red neuronal (entrenada en Python,
+        corriendo en tu navegador con TensorFlow.js) te dice de qué especie es.
+      </p>
+    </header>
+
+    <section class="tarjeta">
+      <p id="estado-modelo" class="estado-modelo">Cargando el modelo…</p>
+
+      <form id="formulario-medidas" class="formulario-medidas">
+        <label class="campo">
+          <span>Largo del sépalo (cm)</span>
+          <input type="number" step="0.1" id="largo-sepalo" placeholder="Ejemplo: 5.1" required />
+        </label>
+        <label class="campo">
+          <span>Ancho del sépalo (cm)</span>
+          <input type="number" step="0.1" id="ancho-sepalo" placeholder="Ejemplo: 3.5" required />
+        </label>
+        <label class="campo">
+          <span>Largo del pétalo (cm)</span>
+          <input type="number" step="0.1" id="largo-petalo" placeholder="Ejemplo: 1.4" required />
+        </label>
+        <label class="campo">
+          <span>Ancho del pétalo (cm)</span>
+          <input type="number" step="0.1" id="ancho-petalo" placeholder="Ejemplo: 0.2" required />
+        </label>
+
+        <button type="submit" id="boton-predecir" class="boton-predecir" disabled>
+          Predecir
+        </button>
+      </form>
+
+      <div class="ejemplos">
+        <span>Probar con un ejemplo:</span>
+        <button type="button" class="boton-ejemplo ejemplo-setosa" data-valores="5.1,3.5,1.4,0.2">Setosa</button>
+        <button type="button" class="boton-ejemplo ejemplo-versicolor" data-valores="6.0,2.7,4.2,1.3">Versicolor</button>
+        <button type="button" class="boton-ejemplo ejemplo-virginica" data-valores="6.7,3.0,5.2,2.3">Virginica</button>
+      </div>
+
+      <div id="resultado" class="resultado" hidden>
+        <p class="resultado-etiqueta">Es una flor:</p>
+        <p id="resultado-especie" class="resultado-especie"></p>
+        <p id="resultado-confianza" class="resultado-confianza"></p>
+      </div>
+
+      <p id="mensaje-error" class="mensaje-error" hidden></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <script src="estaticos/js/script.js"></script>
+</body>
+</html>
