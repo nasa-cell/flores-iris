@@ -46,26 +46,34 @@ def construir_modelo():
     return modelo
 
 
-with open(RUTA_PESOS, encoding="utf-8") as archivo:
-    estado_inicial = json.load(archivo)
+modelo = None
+pesos_originales = None
+media = None
+desviacion = None
 
-# Se guarda una copia de los pesos originales (los que vinieron de
-# entrenar_modelo.py) para poder restablecerlos si hace falta.
-pesos_originales = estado_inicial["pesos"]
-media = np.array(estado_inicial["media"], dtype="float32")
-desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
 
-modelo = construir_modelo()
-modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
+def inicializar_modelo():
+    """Carga el modelo y lo calienta con un dato descartable. Gunicorn la
+    llama desde gunicorn.conf.py (hook post_fork) para que TensorFlow se
+    inicialice DESPUÉS de que el proceso se bifurque en cada worker — si
+    se inicializa antes (en el proceso padre), los hilos internos de
+    TensorFlow quedan rotos en el worker y el entrenamiento se cuelga."""
+    global modelo, pesos_originales, media, desviacion
 
-# "Calentamos" el modelo con un dato descartable, usando train_on_batch()
-# en vez de fit(): es más simple por dentro (un solo paso, sin el
-# tf.data.Dataset ni los callbacks que arma fit()) y no se cuelga cuando
-# el servidor corre con varios hilos, como en Render.
-print("Calentando el modelo...", flush=True)
-modelo.train_on_batch(np.zeros((1, 4), dtype="float32"), np.array([0]))
-modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
-print("Modelo listo. GITHUB_TOKEN configurado:", bool(GITHUB_TOKEN), flush=True)
+    with open(RUTA_PESOS, encoding="utf-8") as archivo:
+        estado_inicial = json.load(archivo)
+
+    pesos_originales = estado_inicial["pesos"]
+    media = np.array(estado_inicial["media"], dtype="float32")
+    desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
+
+    modelo = construir_modelo()
+    modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
+
+    print("Calentando el modelo...", flush=True)
+    modelo.train_on_batch(np.zeros((1, 4), dtype="float32"), np.array([0]))
+    modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
+    print("Modelo listo. GITHUB_TOKEN configurado:", bool(GITHUB_TOKEN), flush=True)
 
 
 def subir_pesos_a_github(mensaje_commit):
@@ -178,6 +186,9 @@ def restablecer():
 
 
 if __name__ == "__main__":
+    # Corriendo con "python app.py" (sin gunicorn ni fork de por medio) se
+    # inicializa acá directamente.
+    inicializar_modelo()
     # Render asigna el puerto por la variable PORT; localmente usa 5000.
     puerto = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=puerto, debug=False)
