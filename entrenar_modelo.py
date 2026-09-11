@@ -3,12 +3,12 @@ Entrena un clasificador de flores Iris (Setosa, Versicolor, Virginica) a
 partir de las 4 medidas clasicas de la flor: largo y ancho del sepalo, largo
 y ancho del petalo. Usa una red neuronal pequena hecha con Keras.
 
-Guarda dos cosas:
-  - modelo_iris.h5      : el modelo entrenado, en el formato original de Keras.
-  - modelo_web/pesos_modelo.json : los pesos de esa misma red, mas la media y
-                          desviacion usadas para normalizar los datos, para
-                          poder reconstruir la red y usarla en el navegador
-                          con TensorFlow.js (estaticos/js/script.js).
+Guarda dos cosas en modelo_web/:
+  - modelo_iris.h5   : el modelo entrenado, en el formato original de Keras.
+  - pesos_modelo.json : los pesos de esa misma red, mas la media y desviacion
+                        usadas para normalizar los datos, para poder
+                        reconstruir la red y usarla en el navegador con
+                        TensorFlow.js (estaticos/js/script.js).
 """
 
 import json
@@ -52,14 +52,14 @@ modelo.fit(X_entrenamiento, y_entrenamiento, epochs=300, verbose=0)
 perdida, precision = modelo.evaluate(X_prueba, y_prueba, verbose=0)
 print(f"Precisión en datos de prueba: {precision:.2%}")
 
-modelo.save("modelo_iris.h5")
+os.makedirs("modelo_web", exist_ok=True)
+modelo.save("modelo_web/modelo_iris.h5")
 
 # Exportamos los pesos a JSON para reconstruir esta misma red en el
 # navegador con TensorFlow.js (el orden coincide con model.get_weights():
 # [pesos_capa1, sesgo_capa1, pesos_capa2, sesgo_capa2, ...]).
 pesos = [capa.tolist() for capa in modelo.get_weights()]
 
-os.makedirs("modelo_web", exist_ok=True)
 with open("modelo_web/pesos_modelo.json", "w", encoding="utf-8") as archivo:
     json.dump(
         {
@@ -71,4 +71,4 @@ with open("modelo_web/pesos_modelo.json", "w", encoding="utf-8") as archivo:
         archivo,
     )
 
-print("Listo: modelo_iris.h5 y modelo_web/pesos_modelo.json")
+print("Listo: modelo_web/modelo_iris.h5 y modelo_web/pesos_modelo.json")

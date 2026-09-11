@@ -21,7 +21,7 @@ from tensorflow.keras import layers
 app = Flask(__name__, static_folder="estaticos", static_url_path="/estaticos")
 
 RUTA_PESOS = "modelo_web/pesos_modelo.json"
-RUTA_H5 = "modelo_iris.h5"
+RUTA_H5 = "modelo_web/modelo_iris.h5"
 ESPECIES = ["Setosa", "Versicolor", "Virginica"]
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -123,12 +123,12 @@ def guardar_pesos_actuales(mensaje_commit):
 @app.route("/")
 @app.route("/index.html")
 def index():
-    return send_from_directory(".", "index.html")
+    return send_from_directory("plantillas", "index.html")
 
 
 @app.route("/datos.html")
 def pagina_datos():
-    return send_from_directory(".", "datos.html")
+    return send_from_directory("plantillas", "datos.html")
 
 
 @app.route("/modelo_web/<path:nombre_archivo>")

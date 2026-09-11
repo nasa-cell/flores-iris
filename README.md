@@ -12,17 +12,24 @@ Página web que predice la especie de una flor Iris (Setosa, Versicolor o Virgin
 ## Estructura del proyecto
 
 ```
-entrenar_modelo.py         entrena el modelo en Python (Keras) y genera modelo_iris.h5 + modelo_web/pesos_modelo.json
-app.py                     servidor Flask: sirve la página y el endpoint de corrección
-requirements.txt           dependencias de Python
-index.html                 página principal (formulario + predicción)
-datos.html                 18 flores reales de ejemplo, agrupadas por especie, con foto
-estaticos/css/estilos.css  estilos
-estaticos/js/script.js     lógica del navegador (TensorFlow.js, formulario, corrección)
-estaticos/img/             fotos de referencia de cada especie
-modelo_iris.h5              modelo entrenado (formato Keras)
-modelo_web/pesos_modelo.json  pesos del modelo + normalización, para usar en el navegador
-render.yaml                 configuración para desplegar en Render
+entrenar_modelo.py           entrena el modelo en Python (Keras) y genera lo de modelo_web/
+app.py                       servidor Flask: sirve la página y el endpoint de corrección
+gunicorn.conf.py             carga el modelo después del fork de cada worker (ver Notas)
+requirements.txt             dependencias de Python
+render.yaml                  configuración para desplegar en Render
+
+plantillas/
+  index.html                 página principal (formulario + predicción)
+  datos.html                 18 flores reales de ejemplo, agrupadas por especie, con foto
+
+estaticos/
+  css/estilos.css            estilos
+  js/script.js                lógica del navegador (TensorFlow.js, formulario, corrección)
+  img/                        fotos de referencia de cada especie
+
+modelo_web/
+  modelo_iris.h5              modelo entrenado (formato Keras)
+  pesos_modelo.json           pesos del modelo + normalización, para usar en el navegador
 ```
 
 ## Correrlo en tu computadora
@@ -51,6 +58,6 @@ Este repositorio ya incluye `render.yaml`:
 ## Notas
 
 - La predicción normal (sin corregir) no necesita servidor: corre en el navegador con TensorFlow.js.
-- La corrección del modelo sí necesita servidor, porque se guarda en un archivo para que la vean todos los visitantes.
-- En el plan gratuito de Render, si el servicio se reinicia (por inactividad, o al subir un cambio nuevo), las correcciones que no estén también en GitHub se pierden — se vuelve a la última versión subida.
+- La corrección del modelo sí necesita servidor: ajusta el modelo y, con `GITHUB_TOKEN` configurado, sube el archivo corregido a este mismo repositorio — así sobrevive aunque Render reinicie el servicio.
+- `gunicorn.conf.py` carga el modelo en un hook `post_fork`, no al importar `app.py`: TensorFlow tiene que inicializarse después de que gunicorn bifurca cada worker, o el entrenamiento se cuelga.
 - El modelo fue evaluado con datos que nunca vio durante el entrenamiento: acierta 29 de 30 (96.7%) en el conjunto de prueba automático, y 17 de 18 (94.4%) en las 18 flores de `datos.html`.
