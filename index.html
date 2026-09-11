@@ -4,6 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Clasificador de Flores Iris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="estaticos/css/estilos.css" />
 </head>
 <body>
@@ -11,11 +17,7 @@
 
   <main class="contenedor">
     <header class="encabezado">
-      <h1>🌸 Clasificador de flores Iris</h1>
-      <p class="subtitulo">
-        Escribe las 4 medidas de la flor y una red neuronal (entrenada en Python,
-        corriendo en tu navegador con TensorFlow.js) te dice de qué especie es.
-      </p>
+      <h1><span class="titulo-insignia">🌸 Clasificador de flores Iris</span></h1>
     </header>
 
     <section class="tarjeta">
@@ -45,19 +47,48 @@
       </form>
 
       <div class="ejemplos">
-        <span>Probar con un ejemplo:</span>
-        <button type="button" class="boton-ejemplo ejemplo-setosa" data-valores="5.1,3.5,1.4,0.2">Setosa</button>
-        <button type="button" class="boton-ejemplo ejemplo-versicolor" data-valores="6.0,2.7,4.2,1.3">Versicolor</button>
-        <button type="button" class="boton-ejemplo ejemplo-virginica" data-valores="6.7,3.0,5.2,2.3">Virginica</button>
+        <span class="ejemplos-etiqueta">Probar con un ejemplo</span>
+        <div class="ejemplos-fila">
+          <button type="button" class="boton-ejemplo ejemplo-setosa" data-valores="5.1,3.5,1.4,0.2">Setosa</button>
+          <button type="button" class="boton-ejemplo ejemplo-versicolor" data-valores="6.0,2.7,4.2,1.3">Versicolor</button>
+          <button type="button" class="boton-ejemplo ejemplo-virginica" data-valores="6.7,3.0,5.2,2.3">Virginica</button>
+        </div>
       </div>
+
+      <a href="datos.html" class="boton-datos">
+        📋 Datos — no sé qué medidas poner
+      </a>
 
       <div id="resultado" class="resultado" hidden>
         <p class="resultado-etiqueta">Es una flor:</p>
         <p id="resultado-especie" class="resultado-especie"></p>
         <p id="resultado-confianza" class="resultado-confianza"></p>
+
+        <div id="feedback" class="feedback">
+          <p class="feedback-pregunta">¿Acertó?</p>
+          <div class="feedback-botones">
+            <button type="button" id="boton-acerto" class="boton-feedback">👍 Sí</button>
+            <button type="button" id="boton-fallo" class="boton-feedback">👎 No</button>
+          </div>
+        </div>
+
+        <div id="feedback-correccion" class="feedback-correccion" hidden>
+          <p class="feedback-pregunta">¿Cuál era la especie correcta?</p>
+          <div class="feedback-botones">
+            <button type="button" class="boton-correccion ejemplo-setosa" data-especie="Setosa">Setosa</button>
+            <button type="button" class="boton-correccion ejemplo-versicolor" data-especie="Versicolor">Versicolor</button>
+            <button type="button" class="boton-correccion ejemplo-virginica" data-especie="Virginica">Virginica</button>
+          </div>
+        </div>
+
+        <p id="feedback-mensaje" class="feedback-mensaje" hidden></p>
       </div>
 
       <p id="mensaje-error" class="mensaje-error" hidden></p>
+
+      <button type="button" id="boton-restablecer" class="boton-restablecer" hidden>
+        ↺ Restablecer modelo original
+      </button>
     </section>
   </main>
 

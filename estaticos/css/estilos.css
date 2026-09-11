@@ -1,33 +1,55 @@
 /* ---------------------------------------------------------------
-   Paleta de colores — tema oscuro
+   Paleta de colores — negro, azul, verde y amarillo oscuro
+   Grises: 10 tonos, casi negro (fondo) · Primario: azul, 6 tonos
+   Acentos por especie: verde (Setosa), amarillo oscuro (Versicolor),
+   azul índigo (Virginica) — 3 tonos cada uno
    ----------------------------------------------------------------*/
 :root {
-  --gris-950: #0a0c10;
-  --gris-900: #12151c;
-  --gris-800: #1a1f29;
-  --gris-700: #232936;
-  --gris-600: #313847;
-  --gris-500: #4a5468;
-  --gris-400: #6b7688;
-  --gris-300: #8d96a8;
-  --gris-200: #b4bbc8;
-  --gris-100: #d8dce4;
-  --gris-50: #f1f3f6;
+  /* Grises — base casi negra */
+  --gris-950: #050708;
+  --gris-900: #0a0d10;
+  --gris-800: #10141a;
+  --gris-700: #181d25;
+  --gris-600: #232a35;
+  --gris-500: #3a4453;
+  --gris-400: #626f80;
+  --gris-300: #8b96a3;
+  --gris-200: #b9c1ca;
+  --gris-100: #dde2e6;
+  --gris-50: #f4f6f7;
 
-  --primario-300: #c9a4ff;
-  --primario-400: #a76bff;
-  --primario-500: #8b3dff;
-  --primario-600: #ff3d9a;
+  /* Primario — azul */
+  --primario-200: #a9cbff;
+  --primario-300: #6fa8ff;
+  --primario-400: #3b82f6;
+  --primario-500: #2563eb;
+  --primario-600: #1d4ed8;
+  --primario-700: #1739a3;
 
-  --rojo-500: #ef4444;
-  --verde-500: #22c55e;
+  /* Acentos por especie */
+  --setosa-300: #86e39a;
+  --setosa-500: #3fb95e;
+  --setosa-700: #278542;
 
-  --setosa: #2fe6c9;
-  --versicolor: #ffb020;
-  --virginica: #ff4d8d;
+  --versicolor-300: #e0b83e;
+  --versicolor-500: #b8890f;
+  --versicolor-700: #85630a;
 
-  --radio-tarjeta: 20px;
-  --radio-campo: 12px;
+  --virginica-300: #a5b8fc;
+  --virginica-500: #6673f4;
+  --virginica-700: #4650c2;
+
+  /* Semántico */
+  --rojo-100: #3a2020;
+  --rojo-400: #f28b8b;
+  --rojo-500: #e05656;
+
+  /* Fondo de la página: amarillo mostaza */
+  --mostaza-fondo: #8a6d1f;
+  --mostaza-fondo-claro: #a5822a;
+
+  --radio-tarjeta: 18px;
+  --radio-campo: 10px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -38,10 +60,10 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--gris-950);
+  background: var(--mostaza-fondo);
   color: var(--gris-100);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  padding-block: 48px;
+  padding-block: 56px;
 }
 
 .fondo {
@@ -49,33 +71,38 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 12% 12%, rgba(139, 61, 255, 0.35), transparent 45%),
-    radial-gradient(circle at 88% 20%, rgba(47, 230, 201, 0.28), transparent 45%),
-    radial-gradient(circle at 30% 90%, rgba(255, 61, 154, 0.25), transparent 50%),
-    radial-gradient(circle at 90% 85%, rgba(255, 176, 32, 0.2), transparent 45%);
+    radial-gradient(circle at 50% -20%, var(--mostaza-fondo-claro), transparent 60%),
+    var(--mostaza-fondo);
 }
 
 .contenedor {
-  max-width: 560px;
+  max-width: 520px;
   margin: 0 auto;
   padding-inline: 20px;
 }
 
 .encabezado {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .encabezado h1 {
-  font-size: 1.8rem;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
-.subtitulo {
-  color: var(--gris-300);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0;
+.titulo-insignia {
+  display: inline-block;
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.55rem;
+  letter-spacing: -0.01em;
+  color: var(--gris-50);
+  background: var(--gris-950);
+  border: 1px solid var(--gris-700);
+  border-radius: 999px;
+  padding: 12px 26px;
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.55);
 }
 
 .tarjeta {
@@ -83,25 +110,14 @@ body {
   background: var(--gris-900);
   border: 1px solid var(--gris-700);
   border-radius: var(--radio-tarjeta);
-  padding: 28px;
-  overflow: hidden;
+  padding: 30px;
   animation: entrada-tarjeta 420ms var(--ease-out) both;
-}
-
-.tarjeta::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--setosa), var(--versicolor), var(--virginica));
 }
 
 @keyframes entrada-tarjeta {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -111,59 +127,70 @@ body {
 
 .estado-modelo {
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--gris-400);
-  margin: 0 0 20px;
+  margin: 0 0 24px;
 }
 
 .formulario-medidas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--gris-200);
+  gap: 7px;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--gris-400);
 }
 
 .campo input {
+  width: 100%;
+  min-width: 0;
   background: var(--gris-800);
   border: 1px solid var(--gris-600);
   border-radius: var(--radio-campo);
-  padding: 10px 12px;
+  padding: 11px 12px;
   color: var(--gris-50);
-  font-size: 0.98rem;
-  transition: border-color 120ms ease-out;
+  font-size: 1.02rem;
+  font-weight: 500;
+  transition: border-color 120ms ease-out, background 120ms ease-out;
+}
+
+.campo input::placeholder {
+  color: var(--gris-500);
 }
 
 .campo input:focus-visible {
-  outline: 2px solid var(--primario-400);
-  outline-offset: 2px;
+  outline: none;
   border-color: var(--primario-400);
+  background: var(--gris-700);
 }
 
 .boton-predecir {
   grid-column: 1 / -1;
   margin-top: 6px;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--primario-500), var(--primario-600));
-  color: white;
+  background: var(--primario-500);
+  color: var(--gris-50);
   border: none;
   border-radius: var(--radio-campo);
-  padding: 13px 20px;
-  font-size: 1.05rem;
+  padding: 14px 20px;
+  font-size: 1.02rem;
   font-weight: 700;
-  box-shadow: 0 8px 24px -8px rgba(139, 61, 255, 0.6);
-  transition: filter 120ms ease, transform 100ms var(--ease-out);
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 20px -4px rgba(37, 99, 235, 0.5);
+  transition: background 120ms ease, transform 100ms var(--ease-out), box-shadow 120ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .boton-predecir:hover:not(:disabled) {
-    filter: brightness(1.12);
+    background: var(--primario-600);
   }
 }
 
@@ -172,110 +199,301 @@ body {
 }
 
 .boton-predecir:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .ejemplos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 18px;
-  font-size: 0.85rem;
+  margin-top: 24px;
+}
+
+.ejemplos-etiqueta {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--gris-400);
+}
+
+.ejemplos-fila {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .boton-ejemplo {
   cursor: pointer;
-  background: var(--gris-800);
-  color: var(--gris-100);
+  background: transparent;
   border: 1px solid var(--gris-600);
   border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
+  padding: 8px 10px;
+  font-size: 0.82rem;
   font-weight: 600;
-  transition: background 120ms ease, transform 100ms var(--ease-out);
-}
-
-.boton-ejemplo:active {
-  transform: scale(0.96);
+  color: var(--gris-200);
+  text-align: center;
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .ejemplo-setosa {
-  border-color: var(--setosa);
-  color: var(--setosa);
+  color: var(--setosa-300);
 }
 
 .ejemplo-versicolor {
-  border-color: var(--versicolor);
-  color: var(--versicolor);
+  color: var(--versicolor-300);
 }
 
 .ejemplo-virginica {
-  border-color: var(--virginica);
-  color: var(--virginica);
+  color: var(--virginica-300);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .ejemplo-setosa:hover {
-    background: rgba(47, 230, 201, 0.15);
+    border-color: var(--setosa-500);
+    background: var(--gris-800);
   }
   .ejemplo-versicolor:hover {
-    background: rgba(255, 176, 32, 0.15);
+    border-color: var(--versicolor-500);
+    background: var(--gris-800);
   }
   .ejemplo-virginica:hover {
-    background: rgba(255, 77, 141, 0.15);
+    border-color: var(--virginica-500);
+    background: var(--gris-800);
+  }
+}
+
+.boton-datos {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed var(--gris-600);
+  border-radius: var(--radio-campo);
+  padding: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gris-300);
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton-datos:hover {
+    border-color: var(--primario-400);
+    color: var(--gris-100);
+  }
+}
+
+.panel-datos-ayuda {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  color: var(--gris-400);
+  line-height: 1.5;
+}
+
+/* --- Acordeón de datos (datos.html) --- */
+.acordeon {
+  display: grid;
+  gap: 10px;
+}
+
+.acordeon-item {
+  background: var(--gris-800);
+  border: 1px solid var(--gris-600);
+  border-radius: var(--radio-campo);
+  overflow: hidden;
+}
+
+.acordeon-item summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.acordeon-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.acordeon-item summary::after {
+  content: "+";
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: var(--gris-400);
+}
+
+.acordeon-item[open] summary::after {
+  content: "–";
+}
+
+.acordeon-item summary img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.acordeon-contenido {
+  padding: 4px 16px 16px 16px;
+}
+
+.acordeon-contenido p {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: var(--gris-300);
+}
+
+.acordeon-contenido strong {
+  color: var(--gris-100);
+  font-weight: 500;
+}
+
+/* Envoltura con scroll horizontal: la tabla nunca desborda la tarjeta,
+   ni siquiera en celulares angostos. */
+.tabla-envoltura {
+  overflow-x: auto;
+}
+
+.tabla-ejemplos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tabla-ejemplos th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--gris-400);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--gris-600);
+}
+
+.tabla-ejemplos td {
+  padding: 8px;
+  color: var(--gris-100);
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--gris-700);
+  white-space: nowrap;
+}
+
+.tabla-ejemplos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.boton-usar-datos {
+  display: inline-block;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--gris-600);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gris-100);
+  text-decoration: none;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton-usar-datos:hover {
+    border-color: var(--primario-400);
+    background: var(--gris-700);
+  }
+}
+
+@media (max-width: 420px) {
+  .acordeon-contenido {
+    padding-left: 16px;
   }
 }
 
 .resultado {
-  margin-top: 22px;
-  padding: 20px;
+  margin-top: 24px;
+  padding: 22px;
   border-radius: var(--radio-campo);
   background: var(--gris-800);
   border: 1px solid var(--gris-600);
+  border-left: 3px solid var(--gris-500);
   text-align: center;
-  animation: resultado-entra 260ms var(--ease-out) both;
+  animation: resultado-entra 220ms var(--ease-out) both;
+}
+
+.resultado.especie-setosa {
+  border-left-color: var(--setosa-500);
+}
+
+.resultado.especie-versicolor {
+  border-left-color: var(--versicolor-500);
+}
+
+.resultado.especie-virginica {
+  border-left-color: var(--virginica-500);
 }
 
 @keyframes resultado-entra {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }
 
 .resultado-etiqueta {
-  margin: 0 0 4px;
-  color: var(--gris-300);
-  font-size: 0.85rem;
+  margin: 0 0 6px;
+  color: var(--gris-400);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .resultado-especie {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-.especie-setosa {
-  color: var(--setosa);
+.especie-setosa .resultado-especie,
+.resultado-especie.especie-setosa {
+  color: var(--setosa-300);
 }
 
-.especie-versicolor {
-  color: var(--versicolor);
+.especie-versicolor .resultado-especie,
+.resultado-especie.especie-versicolor {
+  color: var(--versicolor-300);
 }
 
-.especie-virginica {
-  color: var(--virginica);
+.especie-virginica .resultado-especie,
+.resultado-especie.especie-virginica {
+  color: var(--virginica-300);
+}
+
+.acordeon-item summary .especie-setosa {
+  color: var(--setosa-300);
+}
+
+.acordeon-item summary .especie-versicolor {
+  color: var(--versicolor-300);
+}
+
+.acordeon-item summary .especie-virginica {
+  color: var(--virginica-300);
 }
 
 .resultado-confianza {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--gris-400);
   font-size: 0.85rem;
 }
@@ -284,9 +502,9 @@ body {
   margin-top: 16px;
   padding: 12px 14px;
   border-radius: var(--radio-campo);
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
+  background: var(--rojo-100);
+  border: 1px solid var(--rojo-500);
+  color: var(--rojo-400);
   font-size: 0.9rem;
   text-align: center;
 }
@@ -294,5 +512,134 @@ body {
 @media (max-width: 480px) {
   .formulario-medidas {
     grid-template-columns: 1fr;
+  }
+
+  .boton-ejemplo {
+    padding-inline: 4px;
+    font-size: 0.76rem;
+  }
+}
+
+/* --- Feedback: "¿acertó?" y corrección del modelo --- */
+.feedback,
+.feedback-correccion {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gris-600);
+}
+
+.feedback-pregunta {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--gris-300);
+  text-align: center;
+}
+
+.feedback-botones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.boton-feedback {
+  cursor: pointer;
+  background: var(--gris-700);
+  border: 1px solid var(--gris-600);
+  border-radius: 999px;
+  padding: 7px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gris-100);
+  transition: background 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton-feedback:hover {
+    background: var(--gris-600);
+  }
+}
+
+.boton-correccion {
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--gris-600);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gris-200);
+  transition: background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+.boton-correccion.ejemplo-setosa {
+  border-color: var(--setosa-500);
+}
+
+.boton-correccion.ejemplo-versicolor {
+  border-color: var(--versicolor-500);
+}
+
+.boton-correccion.ejemplo-virginica {
+  border-color: var(--virginica-500);
+}
+
+.boton-correccion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton-correccion.ejemplo-setosa:hover:not(:disabled) {
+    background: var(--setosa-700);
+    color: var(--gris-50);
+  }
+  .boton-correccion.ejemplo-versicolor:hover:not(:disabled) {
+    background: var(--versicolor-700);
+    color: var(--gris-50);
+  }
+  .boton-correccion.ejemplo-virginica:hover:not(:disabled) {
+    background: var(--virginica-700);
+    color: var(--gris-50);
+  }
+}
+
+.feedback-mensaje {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  color: var(--gris-200);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.boton-restablecer {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed var(--gris-600);
+  border-radius: var(--radio-campo);
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gris-400);
+  text-align: center;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.boton-restablecer[hidden] {
+  display: none;
+}
+
+.boton-restablecer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton-restablecer:hover:not(:disabled) {
+    border-color: var(--rojo-500);
+    color: var(--rojo-400);
   }
 }

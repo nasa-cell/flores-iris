@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datos de referencia — Iris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="estaticos/css/estilos.css" />
+</head>
+<body>
+  <div class="fondo" aria-hidden="true"></div>
+
+  <main class="contenedor">
+    <header class="encabezado">
+      <h1><span class="titulo-insignia">📋 Datos de referencia</span></h1>
+    </header>
+
+    <section class="tarjeta">
+      <p class="panel-datos-ayuda">
+        Un bloque por especie, con 6 flores reales del dataset Iris cada uno.
+        Toca "Usar" para probar esa fila en el clasificador.
+      </p>
+
+      <div class="acordeon">
+        <details class="acordeon-item" open>
+          <summary>
+            <img src="estaticos/img/setosa.jpg" alt="" />
+            <span class="especie-setosa">Setosa</span>
+          </summary>
+          <div class="acordeon-contenido">
+            <div class="tabla-envoltura">
+              <table class="tabla-ejemplos">
+                <thead>
+                  <tr>
+                    <th>Sépalo L</th>
+                    <th>Sépalo A</th>
+                    <th>Pétalo L</th>
+                    <th>Pétalo A</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>4.3</td><td>3.0</td><td>1.1</td><td>0.1</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=4.3&as=3.0&lp=1.1&ap=0.1">Usar</a></td></tr>
+                  <tr><td>5.7</td><td>4.4</td><td>1.5</td><td>0.4</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=5.7&as=4.4&lp=1.5&ap=0.4">Usar</a></td></tr>
+                  <tr><td>4.6</td><td>3.6</td><td>1.0</td><td>0.2</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=4.6&as=3.6&lp=1.0&ap=0.2">Usar</a></td></tr>
+                  <tr><td>4.4</td><td>3.2</td><td>1.3</td><td>0.2</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=4.4&as=3.2&lp=1.3&ap=0.2">Usar</a></td></tr>
+                  <tr><td>4.8</td><td>3.1</td><td>1.6</td><td>0.2</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=4.8&as=3.1&lp=1.6&ap=0.2">Usar</a></td></tr>
+                  <tr><td>5.2</td><td>3.5</td><td>1.5</td><td>0.2</td><td><a class="boton-usar-datos ejemplo-setosa" href="index.html?ls=5.2&as=3.5&lp=1.5&ap=0.2">Usar</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="acordeon-item">
+          <summary>
+            <img src="estaticos/img/versicolor.jpg" alt="" />
+            <span class="especie-versicolor">Versicolor</span>
+          </summary>
+          <div class="acordeon-contenido">
+            <div class="tabla-envoltura">
+              <table class="tabla-ejemplos">
+                <thead>
+                  <tr>
+                    <th>Sépalo L</th>
+                    <th>Sépalo A</th>
+                    <th>Pétalo L</th>
+                    <th>Pétalo A</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>6.3</td><td>2.5</td><td>4.9</td><td>1.5</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=6.3&as=2.5&lp=4.9&ap=1.5">Usar</a></td></tr>
+                  <tr><td>5.5</td><td>2.6</td><td>4.4</td><td>1.2</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=5.5&as=2.6&lp=4.4&ap=1.2">Usar</a></td></tr>
+                  <tr><td>6.3</td><td>3.3</td><td>4.7</td><td>1.6</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=6.3&as=3.3&lp=4.7&ap=1.6">Usar</a></td></tr>
+                  <tr><td>5.6</td><td>3.0</td><td>4.5</td><td>1.5</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=5.6&as=3.0&lp=4.5&ap=1.5">Usar</a></td></tr>
+                  <tr><td>5.8</td><td>2.6</td><td>4.0</td><td>1.2</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=5.8&as=2.6&lp=4.0&ap=1.2">Usar</a></td></tr>
+                  <tr><td>5.7</td><td>2.9</td><td>4.2</td><td>1.3</td><td><a class="boton-usar-datos ejemplo-versicolor" href="index.html?ls=5.7&as=2.9&lp=4.2&ap=1.3">Usar</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="acordeon-item">
+          <summary>
+            <img src="estaticos/img/virginica.jpg" alt="" />
+            <span class="especie-virginica">Virginica</span>
+          </summary>
+          <div class="acordeon-contenido">
+            <div class="tabla-envoltura">
+              <table class="tabla-ejemplos">
+                <thead>
+                  <tr>
+                    <th>Sépalo L</th>
+                    <th>Sépalo A</th>
+                    <th>Pétalo L</th>
+                    <th>Pétalo A</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>6.5</td><td>3.0</td><td>5.2</td><td>2.0</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=6.5&as=3.0&lp=5.2&ap=2.0">Usar</a></td></tr>
+                  <tr><td>7.2</td><td>3.2</td><td>6.0</td><td>1.8</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=7.2&as=3.2&lp=6.0&ap=1.8">Usar</a></td></tr>
+                  <tr><td>7.7</td><td>2.6</td><td>6.9</td><td>2.3</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=7.7&as=2.6&lp=6.9&ap=2.3">Usar</a></td></tr>
+                  <tr><td>6.3</td><td>2.8</td><td>5.1</td><td>1.5</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=6.3&as=2.8&lp=5.1&ap=1.5">Usar</a></td></tr>
+                  <tr><td>6.7</td><td>3.3</td><td>5.7</td><td>2.1</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=6.7&as=3.3&lp=5.7&ap=2.1">Usar</a></td></tr>
+                  <tr><td>6.0</td><td>2.2</td><td>5.0</td><td>1.5</td><td><a class="boton-usar-datos ejemplo-virginica" href="index.html?ls=6.0&as=2.2&lp=5.0&ap=1.5">Usar</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <a href="index.html" class="boton-datos">← Volver al clasificador</a>
+    </section>
+  </main>
+</body>
+</html>
