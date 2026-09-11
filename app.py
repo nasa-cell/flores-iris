@@ -61,8 +61,10 @@ modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["
 # "Calentamos" el modelo con un dato descartable: la primera llamada a
 # model.fit() en un proceso es lenta (más aún con poco CPU, como en
 # Render), así que mejor pagarla acá que en la primera corrección real.
+print("Calentando el modelo...", flush=True)
 modelo.fit(np.zeros((1, 4), dtype="float32"), np.array([0]), epochs=1, verbose=0)
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
+print("Modelo listo. GITHUB_TOKEN configurado:", bool(GITHUB_TOKEN), flush=True)
 
 
 def subir_pesos_a_github(mensaje_commit):
@@ -83,18 +85,23 @@ def subir_pesos_a_github(mensaje_commit):
 
         # Hace falta el sha del archivo actual en GitHub para poder
         # reemplazarlo (así lo pide la API de GitHub).
+        print("subir_pesos_a_github: pidiendo sha actual...", flush=True)
         respuesta_actual = requests.get(
-            url_api, headers=cabeceras, params={"ref": GITHUB_RAMA}, timeout=15
+            url_api, headers=cabeceras, params={"ref": GITHUB_RAMA}, timeout=(5, 15)
         )
+        print("subir_pesos_a_github: sha recibido, status", respuesta_actual.status_code, flush=True)
         sha_actual = respuesta_actual.json().get("sha") if respuesta_actual.ok else None
 
         cuerpo = {"message": mensaje_commit, "content": contenido_codificado, "branch": GITHUB_RAMA}
         if sha_actual:
             cuerpo["sha"] = sha_actual
 
-        respuesta = requests.put(url_api, headers=cabeceras, json=cuerpo, timeout=15)
+        print("subir_pesos_a_github: subiendo contenido nuevo...", flush=True)
+        respuesta = requests.put(url_api, headers=cabeceras, json=cuerpo, timeout=(5, 15))
+        print("subir_pesos_a_github: subida terminada, status", respuesta.status_code, flush=True)
         return respuesta.ok
-    except requests.RequestException:
+    except requests.RequestException as error:
+        print("subir_pesos_a_github: fallo de red:", repr(error), flush=True)
         return False
 
 
@@ -143,11 +150,15 @@ def corregir():
     entrada = entrada.reshape(1, 4)
     etiqueta = np.array([indice])
 
+    print("corregir: esperando el candado...", flush=True)
     with candado_modelo:
+        print("corregir: entrenando...", flush=True)
         modelo.fit(entrada, etiqueta, epochs=15, verbose=0)
+        print("corregir: entrenado, guardando...", flush=True)
         guardado_en_github = guardar_pesos_actuales(
             f"Corrige el modelo: {valores} -> {especie_correcta}"
         )
+        print("corregir: guardado listo", flush=True)
 
     return jsonify({"ok": True, "guardado_en_github": guardado_en_github})
 
