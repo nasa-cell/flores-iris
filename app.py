@@ -1,25 +1,12 @@
 """
 Clasificador de flores Iris — servidor Flask
 ---------------------------------------------
-Sirve la página (que usa TensorFlow.js para predecir en el navegador, sin
-pasar por el servidor) y expone un único endpoint:
-
-  - /api/corregir : recibe las 4 medidas de una flor y la especie correcta,
-                     ajusta el modelo de Keras con esos datos (unos pocos
-                     pasos de entrenamiento) y guarda los pesos actualizados
-                     en modelo_web/pesos_modelo.json. Así, la próxima vez que
-                     cualquier visitante cargue la página (no solo quien
-                     corrigió), el modelo ya viene corregido.
-
-Para que la corrección sobreviva aunque Render reinicie el servicio (el
-disco no es permanente entre reinicios), además de guardar el archivo en
-el propio servidor, se sube esa misma corrección al repositorio de GitHub
-usando su API — así, cuando Render vuelva a arrancar, jala el código de
-GitHub, que ya trae la corrección adentro. Para esto hace falta la
-variable de entorno GITHUB_TOKEN (un token con permiso de escritura sobre
-el repositorio). Si no está configurada (por ejemplo, corriendo en tu
-computadora), esa parte simplemente se salta y todo lo demás sigue
-funcionando igual.
+Sirve la página (predice con TensorFlow.js, sin servidor) y expone
+/api/corregir: ajusta el modelo con model.fit() y guarda los pesos en
+modelo_web/pesos_modelo.json, para que la corrección la vea cualquier
+visitante. Con GITHUB_TOKEN configurado, también sube ese archivo a
+GitHub, para que sobreviva a un reinicio de Render; sin token (por
+ejemplo, en tu computadora), esa parte simplemente se salta.
 """
 
 import base64
@@ -73,12 +60,9 @@ desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
 modelo = construir_modelo()
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
 
-# "Calentamos" el modelo: la primera vez que se llama a model.fit() en un
-# proceso, TensorFlow tarda bastante en prepararse por dentro (mucho más en
-# un servidor con poco CPU, como el plan gratis de Render, que en una
-# computadora normal — puede tardar más de un minuto). Para que ese tiempo
-# no lo pague quien haga la primera corrección real, se hace una vez acá,
-# al arrancar el servidor, con un dato descartable.
+# "Calentamos" el modelo con un dato descartable: la primera llamada a
+# model.fit() en un proceso es lenta (más aún con poco CPU, como en
+# Render), así que mejor pagarla acá que en la primera corrección real.
 modelo.fit(np.zeros((1, 4), dtype="float32"), np.array([0]), epochs=1, verbose=0)
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
 

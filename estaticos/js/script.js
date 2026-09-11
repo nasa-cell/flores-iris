@@ -1,16 +1,9 @@
 // Clasificador de flores Iris — lógica del navegador
 //
-// El modelo se entrenó en Python con Keras (ver entrenar_modelo.py) y se
-// guardó como modelo_iris.h5. Acá reconstruimos esa misma red con
-// TensorFlow.js (misma cantidad de capas y neuronas) y le cargamos los
-// pesos ya entrenados desde modelo_web/pesos_modelo.json, para poder
-// predecir directamente en el navegador, sin pasar por el servidor.
-//
-// La única parte que sí habla con el servidor (app.py) es la corrección:
-// cuando alguien marca una predicción como equivocada, se manda a
-// /api/corregir, que ajusta el modelo del lado del servidor y guarda el
-// resultado en modelo_web/pesos_modelo.json — así, la próxima vez que
-// cualquier visitante cargue la página, ya recibe el modelo corregido.
+// Reconstruye en TensorFlow.js la red entrenada en Python (entrenar_modelo.py)
+// y le carga sus pesos, para predecir sin pasar por el servidor. Solo la
+// corrección (/api/corregir) sí habla con app.py, que ajusta el modelo y
+// lo guarda para todos los visitantes.
 
 const formulario = document.getElementById("formulario-medidas");
 const botonPredecir = document.getElementById("boton-predecir");
