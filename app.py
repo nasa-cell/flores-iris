@@ -3,10 +3,8 @@ Clasificador de flores Iris — servidor Flask
 ---------------------------------------------
 Sirve la página (predice con TensorFlow.js, sin servidor) y expone
 /api/corregir: ajusta el modelo con model.fit() y guarda los pesos en
-modelo_web/pesos_modelo.json, para que la corrección la vea cualquier
-visitante. Con GITHUB_TOKEN configurado, también sube ese archivo a
-GitHub, para que sobreviva a un reinicio de Render; sin token (por
-ejemplo, en tu computadora), esa parte simplemente se salta.
+modelo_web/pesos_modelo.json. Con GITHUB_TOKEN configurado, también los
+sube a GitHub, para que sobrevivan a un reinicio de Render.
 """
 
 import base64
@@ -68,9 +66,8 @@ modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["
 
 
 def subir_pesos_a_github(mensaje_commit):
-    """Sube modelo_web/pesos_modelo.json al repositorio de GitHub, para que
-    la corrección sobreviva aunque Render reinicie el servicio. Si no hay
-    token configurado, no hace nada (pasa esto al correr en tu computadora)."""
+    """Sube modelo_web/pesos_modelo.json al repositorio de GitHub. Sin
+    GITHUB_TOKEN configurado, no hace nada."""
     if not GITHUB_TOKEN:
         return False
 
@@ -165,8 +162,6 @@ def restablecer():
 
 
 if __name__ == "__main__":
-    # Render (y la mayoría de plataformas en la nube) asignan el puerto por
-    # la variable de entorno PORT y hay que escuchar en 0.0.0.0, no en
-    # 127.0.0.1. En tu computadora, sin esa variable, sigue usando el 5000.
+    # Render asigna el puerto por la variable PORT; localmente usa 5000.
     puerto = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=puerto, debug=False)
