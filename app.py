@@ -58,11 +58,12 @@ desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
 modelo = construir_modelo()
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
 
-# "Calentamos" el modelo con un dato descartable: la primera llamada a
-# model.fit() en un proceso es lenta (más aún con poco CPU, como en
-# Render), así que mejor pagarla acá que en la primera corrección real.
+# "Calentamos" el modelo con un dato descartable, usando train_on_batch()
+# en vez de fit(): es más simple por dentro (un solo paso, sin el
+# tf.data.Dataset ni los callbacks que arma fit()) y no se cuelga cuando
+# el servidor corre con varios hilos, como en Render.
 print("Calentando el modelo...", flush=True)
-modelo.fit(np.zeros((1, 4), dtype="float32"), np.array([0]), epochs=1, verbose=0)
+modelo.train_on_batch(np.zeros((1, 4), dtype="float32"), np.array([0]))
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
 print("Modelo listo. GITHUB_TOKEN configurado:", bool(GITHUB_TOKEN), flush=True)
 
@@ -153,7 +154,11 @@ def corregir():
     print("corregir: esperando el candado...", flush=True)
     with candado_modelo:
         print("corregir: entrenando...", flush=True)
-        modelo.fit(entrada, etiqueta, epochs=15, verbose=0)
+        # 15 pasos con train_on_batch() en vez de fit(epochs=15): mismo
+        # efecto (15 pasadas de descenso de gradiente sobre este dato),
+        # pero sin el envoltorio de fit() que se cuelga en Render.
+        for _ in range(15):
+            modelo.train_on_batch(entrada, etiqueta)
         print("corregir: entrenado, guardando...", flush=True)
         guardado_en_github = guardar_pesos_actuales(
             f"Corrige el modelo: {valores} -> {especie_correcta}"
