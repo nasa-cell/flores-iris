@@ -150,13 +150,17 @@ async function corregirModelo(especieCorrecta) {
     throw new Error(datos.error || "No se pudo guardar la corrección en el servidor.");
   }
 
+  const { guardado_en_github: guardadoEnGithub } = await respuesta.json();
+
   // Se recarga el modelo ya actualizado y se vuelve a predecir con los
   // mismos datos, para mostrar en el momento que quedó corregido.
   await cargarModelo();
   await predecirYMostrar(ultimosValores);
 
   botonRestablecer.hidden = false;
-  feedbackMensaje.textContent = `✅ Corregido a ${especieCorrecta} y guardado para todos los visitantes.`;
+  feedbackMensaje.textContent = guardadoEnGithub
+    ? `✅ Corregido a ${especieCorrecta} y guardado en GitHub (permanente, incluso si el servidor se reinicia).`
+    : `✅ Corregido a ${especieCorrecta} y guardado para todos los visitantes (mientras el servidor siga prendido).`;
   feedbackMensaje.hidden = false;
 }
 
@@ -216,10 +220,14 @@ botonRestablecer.addEventListener("click", async () => {
     if (!respuesta.ok) {
       throw new Error("No se pudo restablecer el modelo.");
     }
+    const { guardado_en_github: guardadoEnGithub } = await respuesta.json();
+
     await cargarModelo();
     botonRestablecer.hidden = true;
     resultado.hidden = true;
-    feedbackMensaje.textContent = "↺ Modelo restablecido a los pesos originales (para todos los visitantes).";
+    feedbackMensaje.textContent = guardadoEnGithub
+      ? "↺ Modelo restablecido a los pesos originales y guardado en GitHub (permanente)."
+      : "↺ Modelo restablecido a los pesos originales (para todos los visitantes, mientras el servidor siga prendido).";
     feedbackMensaje.hidden = false;
   } catch (error) {
     mostrarError(error.message || "No se pudo restablecer el modelo.");
