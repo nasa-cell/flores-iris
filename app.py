@@ -73,6 +73,15 @@ desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
 modelo = construir_modelo()
 modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
 
+# "Calentamos" el modelo: la primera vez que se llama a model.fit() en un
+# proceso, TensorFlow tarda bastante en prepararse por dentro (mucho más en
+# un servidor con poco CPU, como el plan gratis de Render, que en una
+# computadora normal — puede tardar más de un minuto). Para que ese tiempo
+# no lo pague quien haga la primera corrección real, se hace una vez acá,
+# al arrancar el servidor, con un dato descartable.
+modelo.fit(np.zeros((1, 4), dtype="float32"), np.array([0]), epochs=1, verbose=0)
+modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
+
 
 def subir_pesos_a_github(mensaje_commit):
     """Sube modelo_web/pesos_modelo.json al repositorio de GitHub, para que
