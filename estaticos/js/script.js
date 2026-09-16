@@ -1,9 +1,9 @@
 // Clasificador de flores Iris — lógica del navegador
 //
-// Reconstruye en TensorFlow.js la red entrenada en Python (entrenar_modelo.py)
-// y le carga sus pesos, para predecir sin pasar por el servidor. Solo la
-// corrección (/api/corregir) sí habla con app.py, que ajusta el modelo y
-// lo guarda para todos los visitantes.
+// Cada predicción llama a /api/predecir en el servidor, que carga
+// modelo_iris.h5 con Keras y devuelve la especie. La corrección
+// (/api/corregir) también habla con app.py, que ajusta ese mismo modelo
+// y lo guarda para todos los visitantes.
 
 const formulario = document.getElementById("formulario-medidas");
 const botonPredecir = document.getElementById("boton-predecir");
@@ -25,10 +25,6 @@ const campoAnchoSepalo = document.getElementById("ancho-sepalo");
 const campoLargoPetalo = document.getElementById("largo-petalo");
 const campoAnchoPetalo = document.getElementById("ancho-petalo");
 
-let modelo = null;
-let media = null;
-let desviacion = null;
-let especies = null;
 let ultimosValores = null;
 
 function mostrarError(texto) {
@@ -40,52 +36,22 @@ function ocultarError() {
   mensajeError.hidden = true;
 }
 
-// Reconstruye la misma arquitectura que se entrenó en Python (entrenar_modelo.py:
-// Dense(8, relu) -> Dense(8, relu) -> Dense(3, softmax)) y le carga los pesos
-// ya entrenados en vez de empezar desde cero.
-async function cargarModelo() {
-  // "?t=" evita que el navegador use una copia vieja guardada en caché —
-  // importante después de una corrección, para traer los pesos nuevos.
-  const respuesta = await fetch(`modelo_web/pesos_modelo.json?t=${Date.now()}`);
-  if (!respuesta.ok) {
-    throw new Error("No se pudo cargar el modelo entrenado.");
-  }
-  const datos = await respuesta.json();
-
-  especies = datos.especies;
-  media = datos.media;
-  desviacion = datos.desviacion;
-
-  modelo = tf.sequential();
-  modelo.add(tf.layers.dense({ units: 8, activation: "relu", inputShape: [4] }));
-  modelo.add(tf.layers.dense({ units: 8, activation: "relu" }));
-  modelo.add(tf.layers.dense({ units: 3, activation: "softmax" }));
-
-  // El orden de los pesos coincide con lo que devuelve model.get_weights()
-  // en Keras: [pesos_capa1, sesgo_capa1, pesos_capa2, sesgo_capa2, ...].
-  const pesosComoTensores = datos.pesos.map((capa) => tf.tensor(capa));
-  modelo.setWeights(pesosComoTensores);
-}
-
-// Aplica la misma normalización (media 0, desviación 1) que se usó al
-// entrenar, para que el modelo reciba los datos en la misma escala.
-function normalizar(valores) {
-  return valores.map((valor, i) => (valor - media[i]) / desviacion[i]);
-}
-
+// Le manda las 4 medidas al servidor, que normaliza, corre modelo_iris.h5
+// con Keras y devuelve la especie predicha.
 async function predecir(valores) {
-  const entrada = tf.tensor2d([normalizar(valores)]);
-  const salida = modelo.predict(entrada);
-  const probabilidades = await salida.data();
-  entrada.dispose();
-  salida.dispose();
+  const respuesta = await fetch("/api/predecir", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ valores }),
+  });
 
-  let indiceMax = 0;
-  for (let i = 1; i < probabilidades.length; i++) {
-    if (probabilidades[i] > probabilidades[indiceMax]) indiceMax = i;
+  if (!respuesta.ok) {
+    const datos = await respuesta.json().catch(() => ({}));
+    throw new Error(datos.error || "No se pudo predecir.");
   }
 
-  return { especie: especies[indiceMax], confianza: probabilidades[indiceMax] };
+  const { especie, confianza } = await respuesta.json();
+  return { especie, confianza };
 }
 
 function leerMedidas() {
@@ -127,10 +93,9 @@ async function predecirYMostrar(valores) {
   }
 }
 
-// Le manda la corrección al servidor: ajusta el modelo del lado de Python
-// (con model.fit(), unos pocos pasos) y guarda los pesos nuevos en
-// modelo_web/pesos_modelo.json. Por eso el arreglo lo ve cualquier
-// visitante, no solo quien corrigió.
+// Le manda la corrección al servidor: ajusta modelo_iris.h5 del lado de
+// Python (con train_on_batch(), unos pocos pasos) y lo vuelve a guardar.
+// Por eso el arreglo lo ve cualquier visitante, no solo quien corrigió.
 async function corregirModelo(especieCorrecta) {
   const respuesta = await fetch("/api/corregir", {
     method: "POST",
@@ -145,9 +110,8 @@ async function corregirModelo(especieCorrecta) {
 
   const { guardado_en_github: guardadoEnGithub } = await respuesta.json();
 
-  // Se recarga el modelo ya actualizado y se vuelve a predecir con los
-  // mismos datos, para mostrar en el momento que quedó corregido.
-  await cargarModelo();
+  // El servidor ya tiene el modelo actualizado en memoria: alcanza con
+  // volver a predecir con los mismos datos para mostrar el resultado nuevo.
   await predecirYMostrar(ultimosValores);
 
   botonRestablecer.hidden = false;
@@ -215,7 +179,6 @@ botonRestablecer.addEventListener("click", async () => {
     }
     const { guardado_en_github: guardadoEnGithub } = await respuesta.json();
 
-    await cargarModelo();
     botonRestablecer.hidden = true;
     resultado.hidden = true;
     feedbackMensaje.textContent = guardadoEnGithub
@@ -239,18 +202,13 @@ function leerMedidasDeUrl() {
   return valores.some((v) => Number.isNaN(v)) ? null : valores;
 }
 
-cargarModelo()
-  .then(() => {
-    estadoModelo.textContent = "Modelo listo — escribe las medidas o prueba un ejemplo.";
-    botonPredecir.disabled = false;
+// La predicción ahora corre en el servidor (/api/predecir), así que no hace
+// falta cargar ningún modelo en el navegador antes de habilitar el botón.
+estadoModelo.textContent = "Listo — escribe las medidas o prueba un ejemplo.";
+botonPredecir.disabled = false;
 
-    const valoresDeUrl = leerMedidasDeUrl();
-    if (valoresDeUrl) {
-      llenarFormulario(valoresDeUrl);
-      predecirYMostrar(valoresDeUrl);
-    }
-  })
-  .catch((error) => {
-    estadoModelo.textContent = "No se pudo cargar el modelo.";
-    mostrarError(error.message || "No se pudo cargar el modelo.");
-  });
+const valoresDeUrl = leerMedidasDeUrl();
+if (valoresDeUrl) {
+  llenarFormulario(valoresDeUrl);
+  predecirYMostrar(valoresDeUrl);
+}

@@ -1,10 +1,11 @@
 """
 Clasificador de flores Iris — servidor Flask
 ---------------------------------------------
-Sirve la página (predice con TensorFlow.js, sin servidor) y expone
-/api/corregir: ajusta el modelo con model.fit() y guarda los pesos en
-modelo_web/pesos_modelo.json. Con GITHUB_TOKEN configurado, también los
-sube a GitHub, para que sobrevivan a un reinicio de Render.
+Carga modelo_web/modelo_iris.h5 con Keras y predice del lado del servidor
+(/api/predecir). /api/corregir ajusta ese mismo modelo con train_on_batch()
+y lo vuelve a guardar en modelo_iris.h5. Con GITHUB_TOKEN configurado,
+también sube el .h5 actualizado a GitHub, para que sobreviva a un reinicio
+de Render.
 """
 
 import base64
@@ -16,11 +17,10 @@ import numpy as np
 import requests
 from flask import Flask, jsonify, request, send_from_directory
 from tensorflow import keras
-from tensorflow.keras import layers
 
 app = Flask(__name__, static_folder="estaticos", static_url_path="/estaticos")
 
-RUTA_PESOS = "modelo_web/pesos_modelo.json"
+RUTA_CONFIG = "modelo_web/configuracion.json"
 RUTA_H5 = "modelo_web/modelo_iris.h5"
 ESPECIES = ["Setosa", "Versicolor", "Virginica"]
 
@@ -33,62 +33,86 @@ GITHUB_RAMA = os.environ.get("GITHUB_BRANCH", "main")
 candado_modelo = threading.Lock()
 
 
-def construir_modelo():
-    modelo = keras.Sequential(
-        [
-            layers.Input(shape=(4,)),
-            layers.Dense(8, activation="relu"),
-            layers.Dense(8, activation="relu"),
-            layers.Dense(3, activation="softmax"),
-        ]
-    )
-    modelo.compile(optimizer=keras.optimizers.Adam(0.05), loss="sparse_categorical_crossentropy")
-    return modelo
-
-
 modelo = None
 pesos_originales = None
 media = None
 desviacion = None
 
 
-def inicializar_modelo():
-    """Carga el modelo y lo calienta con un dato descartable. Gunicorn la
-    llama desde gunicorn.conf.py (hook post_fork) para que TensorFlow se
-    inicialice DESPUÉS de que el proceso se bifurque en cada worker — si
-    se inicializa antes (en el proceso padre), los hilos internos de
-    TensorFlow quedan rotos en el worker y el entrenamiento se cuelga."""
-    global modelo, pesos_originales, media, desviacion
-
-    with open(RUTA_PESOS, encoding="utf-8") as archivo:
-        estado_inicial = json.load(archivo)
-
-    pesos_originales = estado_inicial["pesos"]
-    media = np.array(estado_inicial["media"], dtype="float32")
-    desviacion = np.array(estado_inicial["desviacion"], dtype="float32")
-
-    modelo = construir_modelo()
-    modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
-
-    modelo.train_on_batch(np.zeros((1, 4), dtype="float32"), np.array([0]))
-    modelo.set_weights([np.array(capa, dtype="float32") for capa in estado_inicial["pesos"]])
-    print("Modelo listo.", flush=True)
-
-
-def subir_pesos_a_github(mensaje_commit):
-    """Sube modelo_web/pesos_modelo.json al repositorio de GitHub. Sin
-    GITHUB_TOKEN configurado, no hace nada."""
+def descargar_modelo_de_github():
+    """Trae la última versión de modelo_iris.h5 desde GitHub y la deja en
+    RUTA_H5, ANTES de cargarla. El disco de Render es efímero: cada reinicio
+    o redeploy vuelve a partir del .h5 que está en el repositorio, así que
+    si no se descarga la versión corregida, cualquier corrección hecha con
+    /api/corregir se perdería en el próximo reinicio. Sin GITHUB_TOKEN, o si
+    la descarga falla, se sigue con el .h5 que ya está en el disco (el del
+    propio repositorio/checkout)."""
     if not GITHUB_TOKEN:
         return False
 
-    url_api = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{RUTA_PESOS}"
+    url_api = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{RUTA_H5}"
     cabeceras = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
     }
 
     try:
-        with open(RUTA_PESOS, "rb") as archivo:
+        respuesta = requests.get(url_api, headers=cabeceras, params={"ref": GITHUB_RAMA}, timeout=(5, 15))
+        if not respuesta.ok:
+            return False
+        contenido = base64.b64decode(respuesta.json()["content"])
+        with open(RUTA_H5, "wb") as archivo:
+            archivo.write(contenido)
+        print("Modelo descargado desde GitHub (última corrección incluida).", flush=True)
+        return True
+    except (requests.RequestException, KeyError, ValueError) as error:
+        print("descargar_modelo_de_github: fallo, se usa el .h5 del repositorio:", repr(error), flush=True)
+        return False
+
+
+def inicializar_modelo():
+    """Carga modelo_iris.h5 y lo calienta con un dato descartable. Gunicorn
+    la llama desde gunicorn.conf.py (hook post_fork) para que TensorFlow se
+    inicialice DESPUÉS de que el proceso se bifurque en cada worker — si
+    se inicializa antes (en el proceso padre), los hilos internos de
+    TensorFlow quedan rotos en el worker y el entrenamiento se cuelga."""
+    global modelo, pesos_originales, media, desviacion
+
+    descargar_modelo_de_github()
+
+    with open(RUTA_CONFIG, encoding="utf-8") as archivo:
+        configuracion = json.load(archivo)
+
+    media = np.array(configuracion["media"], dtype="float32")
+    desviacion = np.array(configuracion["desviacion"], dtype="float32")
+
+    modelo = keras.models.load_model(RUTA_H5)
+    # Mismo optimizador que usaba /api/corregir antes: Adam con learning
+    # rate alto, para que una corrección puntual mueva el modelo en pocos
+    # pasos. El modelo.save() de Keras guarda el optimizador con el que se
+    # entrenó originalmente (uno más conservador), así que se recompila acá.
+    modelo.compile(optimizer=keras.optimizers.Adam(0.05), loss="sparse_categorical_crossentropy")
+
+    pesos_originales = [capa.copy() for capa in modelo.get_weights()]
+    modelo.train_on_batch(np.zeros((1, 4), dtype="float32"), np.array([0]))
+    modelo.set_weights(pesos_originales)
+    print("Modelo listo.", flush=True)
+
+
+def subir_modelo_a_github(mensaje_commit):
+    """Sube modelo_web/modelo_iris.h5 al repositorio de GitHub. Sin
+    GITHUB_TOKEN configurado, no hace nada."""
+    if not GITHUB_TOKEN:
+        return False
+
+    url_api = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{RUTA_H5}"
+    cabeceras = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+    }
+
+    try:
+        with open(RUTA_H5, "rb") as archivo:
             contenido_codificado = base64.b64encode(archivo.read()).decode("ascii")
 
         # Hace falta el sha del archivo actual en GitHub para poder
@@ -105,19 +129,13 @@ def subir_pesos_a_github(mensaje_commit):
         respuesta = requests.put(url_api, headers=cabeceras, json=cuerpo, timeout=(5, 15))
         return respuesta.ok
     except requests.RequestException as error:
-        print("subir_pesos_a_github: fallo de red:", repr(error), flush=True)
+        print("subir_modelo_a_github: fallo de red:", repr(error), flush=True)
         return False
 
 
-def guardar_pesos_actuales(mensaje_commit):
-    pesos = [capa.tolist() for capa in modelo.get_weights()]
-    with open(RUTA_PESOS, "w", encoding="utf-8") as archivo:
-        json.dump(
-            {"especies": ESPECIES, "media": media.tolist(), "desviacion": desviacion.tolist(), "pesos": pesos},
-            archivo,
-        )
+def guardar_modelo_actual(mensaje_commit):
     modelo.save(RUTA_H5)
-    return subir_pesos_a_github(mensaje_commit)
+    return subir_modelo_a_github(mensaje_commit)
 
 
 @app.route("/")
@@ -131,13 +149,30 @@ def pagina_datos():
     return send_from_directory("plantillas", "datos.html")
 
 
-@app.route("/modelo_web/<path:nombre_archivo>")
-def modelo_web(nombre_archivo):
-    respuesta = send_from_directory("modelo_web", nombre_archivo)
-    # Sin caché: si el modelo se corrigió, el navegador tiene que traer la
-    # versión nueva sí o sí, no una copia vieja guardada localmente.
-    respuesta.headers["Cache-Control"] = "no-store"
-    return respuesta
+@app.route("/api/predecir", methods=["POST"])
+def predecir():
+    datos = request.get_json(force=True, silent=True) or {}
+    valores = datos.get("valores")
+
+    if not isinstance(valores, list) or len(valores) != 4:
+        return jsonify({"error": "Faltan las 4 medidas."}), 400
+    try:
+        entrada = (np.array(valores, dtype="float32") - media) / desviacion
+    except (TypeError, ValueError):
+        return jsonify({"error": "Las 4 medidas deben ser números."}), 400
+    entrada = entrada.reshape(1, 4)
+
+    with candado_modelo:
+        probabilidades = modelo.predict(entrada, verbose=0)[0]
+
+    indice = int(np.argmax(probabilidades))
+    return jsonify(
+        {
+            "especie": ESPECIES[indice],
+            "confianza": float(probabilidades[indice]),
+            "probabilidades": {especie: float(p) for especie, p in zip(ESPECIES, probabilidades)},
+        }
+    )
 
 
 @app.route("/api/corregir", methods=["POST"])
@@ -160,7 +195,7 @@ def corregir():
         # pero sin el envoltorio de fit() que se cuelga en Render.
         for _ in range(15):
             modelo.train_on_batch(entrada, etiqueta)
-        guardado_en_github = guardar_pesos_actuales(
+        guardado_en_github = guardar_modelo_actual(
             f"Corrige el modelo: {valores} -> {especie_correcta}"
         )
 
@@ -170,8 +205,8 @@ def corregir():
 @app.route("/api/restablecer", methods=["POST"])
 def restablecer():
     with candado_modelo:
-        modelo.set_weights([np.array(capa, dtype="float32") for capa in pesos_originales])
-        guardado_en_github = guardar_pesos_actuales("Restablece el modelo a los pesos originales")
+        modelo.set_weights([capa.copy() for capa in pesos_originales])
+        guardado_en_github = guardar_modelo_actual("Restablece el modelo a los pesos originales")
 
     return jsonify({"ok": True, "guardado_en_github": guardado_en_github})
 

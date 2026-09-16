@@ -4,6 +4,10 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
+    # --workers 1 es obligatorio: el modelo vive una sola vez en memoria y
+    # /api/corregir lo actualiza ahí mismo. Con más de 1 worker, cada uno
+    # tendría su propia copia del modelo (más RAM) y las correcciones de un
+    # worker no se verían en las predicciones que atienda otro worker.
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 180
     envVars:
       - key: PYTHON_VERSION
